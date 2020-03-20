@@ -1,68 +1,82 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 运行
 
-## Available Scripts
+`npm install`
 
-In the project directory, you can run:
+`npm run start`
 
-### `npm start`
+## 问题1：
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### 问题复现：
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+#### step1
 
-### `npm test`
+在`src/pages/RoutePage.js`文件中，注释掉以下代码：
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```js
+<Route path="/about" component={About} />
+<Route path="/user/:id" component={UserInfo} />
+<Route path="/articles/:category" component={ArticleCatePage} />
+```
 
-### `npm run build`
+同时打开如下代码：
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```js
+<PrivateRoute path="/about" component={About} />
+<PrivateRoute path="/user/:id" component={UserInfo} />
+<PrivateRoute path="/articles/:category" component={ArticleCatePage} />
+```
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+#### step2：
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. 刷新页面，点击任意链接
+2. 登录页填写姓名，点击登录
 
-### `npm run eject`
+### 现象描述：
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+#### 期望：
+1. 登录之后，页面跳转到未登录之前点击的链接页
+2. 带有参数的路由也能正常跳转，浏览器url显示正常
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+#### 实际结果：
+1. 页面重定向之后显示空白
+2. 带有参数的路由页，浏览器参数显示异常，参数未能被替换
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 问题2：
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### 问题复现：
 
-## Learn More
+#### step1:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+`src/store/login/actionCreator.js`文件下，注释以下代码：
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```js
+dispatch(setIsLogin(isLogin))
+dispatch(setLoginTime())
+dispatch(setUserName(username))
+```
+同时打开如下代码：
 
-### Code Splitting
+```js
+return new Promise((resolve) => {
+  setTimeout(() => {
+    dispatch(setIsLogin(isLogin))
+    dispatch(setLoginTime())
+    dispatch(setUserName(username))
+    resolve(true)
+  }, 1000)
+})
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+#### step2:
 
-### Analyzing the Bundle Size
+刷新页面，进入登录页，填写姓名登录，查看action执行的日志
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+### 现象描述：
 
-### Making a Progressive Web App
+#### 期望：
+1. 登录之后，等待一秒（模仿后端登录延迟），操作可正常修改store中的登录状态、登录时间，以及用户姓名
+2. 操作日志打印各action执行正常。
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+#### 实际结果：
+1. action执行出错，未能完成登录操作
 
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
